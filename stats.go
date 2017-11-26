@@ -11,10 +11,21 @@ import (
 
 // InfluxOptions ...
 type InfluxOptions struct {
+	Service     string
 	Measurement string
 	Database    string
 	Tags        map[string]string
 	Fields      map[string]interface{}
+}
+
+// NewOpts returns a new options structure with the specified
+// service, measurement, and database.
+func NewOpts(service, measurement, database string) InfluxOptions {
+	opts := InfluxOptions{}
+	opts.Service = service
+	opts.Measurement = measurement
+	opts.Database = database
+	return opts
 }
 
 // NewInfluxClient creates a new InfluxDB client
@@ -62,8 +73,15 @@ func UnaryServerInterceptor(c client.Client, opts InfluxOptions) grpc.UnaryServe
 		fields := map[string]interface{}{
 			"latency": latency.Seconds() * 1000,
 		}
+
+		if err != nil {
+			tags["error"] = err.Error()
+			tags["error_code"] = string(grpc.Code(err))
+		}
+
 		opts.Tags = tags
 		opts.Fields = fields
+
 		WriteToInflux(opts, c)
 
 		return resp, err

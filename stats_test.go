@@ -7,6 +7,7 @@ import (
 
 	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
 	client "github.com/influxdata/influxdb/client/v2"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"golang.org/x/net/context"
@@ -112,4 +113,33 @@ func (s *testService) PingList(ping *pb_testproto.PingRequest, stream pb_testpro
 		stream.Send(&pb_testproto.PingResponse{Value: ping.Value, Counter: int32(i)})
 	}
 	return nil
+}
+
+func TestNewClient(t *testing.T) {
+
+	c, err := NewInfluxClient("")
+
+	d, _ := time.ParseDuration("2s")
+
+	ping, _, _ := c.Ping(d)
+
+	// assert equality
+	assert.Equal(t, ping, time.Duration(0), "they should be equal")
+
+	// assert for nil (good for errors)
+	assert.Nil(t, err)
+
+	assert.NotNil(t, c)
+}
+
+func TestNewOptions(t *testing.T) {
+
+	opts := NewOpts("myservice", "mymeasurement", "mydb")
+
+	// assert equality
+	assert.Equal(t, opts.Service, "myservice", "they should be equal")
+	assert.Equal(t, opts.Measurement, "mymeasurement", "they should be equal")
+	assert.Equal(t, opts.Database, "mydb", "they should be equal")
+
+	assert.NotNil(t, opts)
 }
