@@ -3,10 +3,10 @@ package stats
 import (
 	"time"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	client "github.com/influxdata/influxdb/client/v2"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-
-	client "github.com/influxdata/influxdb/client/v2"
 )
 
 // InfluxOptions ...
@@ -66,15 +66,11 @@ func UnaryServerInterceptor(c client.Client, opts InfluxOptions) grpc.UnaryServe
 		latency := time.Now().Sub(startTime)
 
 		tags := map[string]string{
-			"method": info.FullMethod,
+			"method":     info.FullMethod,
+			"error_code": string(grpc.Code(err)),
 		}
 		fields := map[string]interface{}{
 			"latency": latency.Seconds() * 1000,
-		}
-
-		if err != nil {
-			tags["error"] = err.Error()
-			tags["error_code"] = string(grpc.Code(err))
 		}
 
 		opts.Tags = tags
@@ -83,5 +79,32 @@ func UnaryServerInterceptor(c client.Client, opts InfluxOptions) grpc.UnaryServe
 		WriteToInflux(opts, c)
 
 		return resp, err
+	}
+}
+
+// StreamServerInterceptor returns a new streaming server
+// interceptor that logs stats to influxdb.
+func StreamServerInterceptor(c client.Client, opts InfluxOptions) grpc.StreamServerInterceptor {
+	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		startTime := time.Now()
+		wrapped := grpc_middleware.WrapServerStream(stream)
+		err := handler(srv, wrapped)
+
+		latency := time.Now().Sub(startTime)
+
+		tags := map[string]string{
+			"method":     info.FullMethod,
+			"error_code": string(grpc.Code(err)),
+		}
+		fields := map[string]interface{}{
+			"latency": latency.Seconds() * 1000,
+		}
+
+		opts.Tags = tags
+		opts.Fields = fields
+
+		WriteToInflux(opts, c)
+
+		return err
 	}
 }
