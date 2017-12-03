@@ -134,10 +134,9 @@ func TestNewClient(t *testing.T) {
 
 func TestNewOptions(t *testing.T) {
 
-	opts := NewOpts("myservice", "mymeasurement", "mydb")
+	opts := NewOpts("mymeasurement", "mydb")
 
 	// assert equality
-	assert.Equal(t, opts.Service, "myservice", "they should be equal")
 	assert.Equal(t, opts.Measurement, "mymeasurement", "they should be equal")
 	assert.Equal(t, opts.Database, "mydb", "they should be equal")
 

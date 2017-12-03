@@ -11,7 +11,6 @@ import (
 
 // InfluxOptions ...
 type InfluxOptions struct {
-	Service     string
 	Measurement string
 	Database    string
 	Tags        map[string]string
@@ -19,10 +18,9 @@ type InfluxOptions struct {
 }
 
 // NewOpts returns a new options structure with the specified
-// service, measurement, and database.
-func NewOpts(service, measurement, database string) InfluxOptions {
+// measurement, and database.
+func NewOpts(measurement, database string) InfluxOptions {
 	opts := InfluxOptions{}
-	opts.Service = service
 	opts.Measurement = measurement
 	opts.Database = database
 	return opts
