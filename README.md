@@ -3,7 +3,7 @@ a stats package for grpc and influxdb
 
 ## Usage
 
-```
+```go
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
