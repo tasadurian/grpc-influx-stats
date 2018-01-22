@@ -67,7 +67,7 @@ func UnaryServerInterceptor(c client.Client, opts InfluxOptions) grpc.UnaryServe
 
 		tags := map[string]string{
 			"method":     info.FullMethod,
-			"error_code": string(grpc.Code(err)),
+			"error_code": grpc.Code(err).String(),
 		}
 		fields := map[string]interface{}{
 			"latency": latency.Seconds() * 1000,
